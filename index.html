@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2E7D32">
+    <title>Dairy Farm Manager v2.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --accent: #FF9800;
+            --danger: #F44336;
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --text: #212121;
+            --text-light: #757575;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1B5E20 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        /* Connection Status */
+        .status-bar {
+            background: #333;
+            color: white;
+            padding: 5px 15px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-bar.online { background: var(--primary); }
+        .status-bar.offline { background: var(--danger); }
+        
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .stat-card.milk::before { background: #2196F3; }
+        .stat-card.money::before { background: var(--primary); }
+        .stat-card.cattle::before { background: var(--accent); }
+        .stat-card.profit::before { background: #9C27B0; }
+        
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 15px;
+        }
+        
+        .menu-btn {
+            background: var(--card);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .menu-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .menu-btn:active { transform: scale(0.95); }
+        
+        .menu-icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .menu-text {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .section.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Forms */
+        .form-container {
+            background: var(--card);
+            margin: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #1B5E20; }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: var(--text);
+        }
+        
+        .btn-success { background: var(--primary-light); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        /* Lists */
+        .list {
+            background: var(--card);
+            margin: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .list-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .list-item:last-child { border-bottom: none; }
+        
+        .list-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .list-item-subtitle {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .list-item-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 5px 15px;
+            transition: color 0.3s;
+        }
+        
+        .nav-btn.active { color: var(--primary); }
+        
+        .nav-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            margin: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #E8F5E9;
+            color: #2E7D32;
+            border: 1px solid #4CAF50;
+        }
+        
+        .alert-error {
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #F44336;
+        }
+        
+        .alert.show { display: block; animation: slideIn 0.3s; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Version Badge */
+        .version-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            z-index: 1001;
+        }
+        
+        /* Responsive */
+        @media (max-width: 380px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .menu-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Version Badge -->
+    <div class="version-badge" id="versionBadge">v2.0</div>
+
+    <!-- Status Bar -->
+    <div class="status-bar online" id="statusBar">
+        <span id="statusText">🟢 Connected to Database</span>
+        <span id="syncStatus">Synced</span>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>🐄 Dairy Farm Manager</h1>
+        <p id="currentDate">Loading...</p>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <div id="dashboardSection" class="section active">
+        <div class="dashboard">
+            <div class="stat-card milk">
+                <div class="stat-icon">🥛</div>
+                <div class="stat-value" id="todayMilk">--</div>
+                <div class="stat-label">Liters Today</div>
+            </div>
+            <div class="stat-card money">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value" id="todayRevenue">₹--</div>
+                <div class="stat-label">Revenue Today</div>
+            </div>
+            <div class="stat-card cattle">
+                <div class="stat-icon">🐮</div>
+                <div class="stat-value" id="totalCattle">--</div>
+                <div class="stat-label">Total Cattle</div>
+            </div>
+            <div class="stat-card profit">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value" id="monthProfit">₹--</div>
+                <div class="stat-label">This Month</div>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="showSection('milkSection')">
+                <span class="menu-icon">🥛</span>
+                <span class="menu-text">Milk Sale</span>
+            </button>
+            <button class="menu-btn" onclick="showSection('customerSection')">
+                <span class="menu-icon">👥</span>
+                <span class="menu-text">Customers</span>
+            </button>
+            <button class="menu-btn" onclick="showSection('cattleSection')">
+                <span class="menu-icon">🐄</span>
+                <span class="menu-text">Cattle</span>
+            </button>
+            <button class="menu-btn" onclick="showSection('feedSection')">
+                <span class="menu-icon">🌾</span>
+                <span class="menu-text">Feed</span>
+            </button>
+            <button class="menu-btn" onclick="showSection('agriSection')">
+                <span class="menu-icon">🌱</span>
+                <span class="menu-text">Agriculture</span>
+            </button>
+            <button class="menu-btn" onclick="showSection('reportsSection')">
+                <span class="menu-icon">📊</span>
+                <span class="menu-text">Reports</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MILK SALE SECTION -->
+    <div id="milkSection" class="section">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px;">🥛 Record Milk Sale</h2>
+            
+            <div class="alert alert-success" id="milkSuccess"></div>
+            <div class="alert alert-error" id="milkError"></div>
+
+            <div class="form-group">
+                <label>Customer *</label>
+                <select id="milkCustomer"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Morning Quantity (Liters)</label>
+                <input type="number" id="morningQty" step="0.1" placeholder="0.0">
+            </div>
+
+            <div class="form-group">
+                <label>Evening Quantity (Liters)</label>
+                <input type="number" id="eveningQty" step="0.1" placeholder="0.0">
+            </div>
+
+            <div class="form-group">
+                <label>Payment Status</label>
+                <select id="paymentStatus">
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Partial">Partial</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="submitMilkSale()">💾 Save Record</button>
+            <button class="btn btn-secondary" onclick="showSection('dashboardSection')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- CUSTOMER SECTION -->
+    <div id="customerSection" class="section">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px;">👥 Customers</h2>
+            <button class="btn btn-success" onclick="toggleCustomerForm()">➕ Add Customer</button>
+        </div>
+
+        <div class="form-container" id="addCustomerForm" style="display: none;">
+            <h3>New Customer</h3>
+            <div class="form-group">
+                <label>Name *</label>
+                <input type="text" id="custName" placeholder="Customer name">
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="custPhone" placeholder="9876543210">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="custAddress" placeholder="Village/Area">
+            </div>
+            <div class="form-group">
+                <label>Rate per Liter (₹) *</label>
+                <input type="number" id="custRate" step="0.5" placeholder="50">
+            </div>
+            <div class="form-group">
+                <label>Delivery</label>
+                <select id="custNotes">
+                    <option value="Morning + Evening">Morning + Evening</option>
+                    <option value="Morning only">Morning only</option>
+                    <option value="Evening only">Evening only</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="submitCustomer()">Save Customer</button>
+            <button class="btn btn-secondary" onclick="toggleCustomerForm()">Cancel</button>
+        </div>
+
+        <div class="list" id="customerList">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading customers...
+            </div>
+        </div>
+    </div>
+
+    <!-- CATTLE SECTION -->
+    <div id="cattleSection" class="section">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px;">🐄 Cattle Management</h2>
+            <button class="btn btn-success" onclick="toggleCattleForm()">➕ Add Cattle</button>
+        </div>
+
+        <div class="form-container" id="addCattleForm" style="display: none;">
+            <h3>New Cattle</h3>
+            <div class="form-group">
+                <label>Tag Number *</label>
+                <input type="text" id="cattleTag" placeholder="T001">
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="cattleName" placeholder="Optional name">
+            </div>
+            <div class="form-group">
+                <label>Breed</label>
+                <select id="cattleBreed">
+                    <option>Gir</option>
+                    <option>Sahiwal</option>
+                    <option>Jersey</option>
+                    <option>HF</option>
+                    <option>Local</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="cattleStatus">
+                    <option>Milking</option>
+                    <option>Pregnant</option>
+                    <option>Dry</option>
+                    <option>Heifer</option>
+                    <option>Calf</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Purchase Price (₹)</label>
+                <input type="number" id="cattlePrice" placeholder="45000">
+            </div>
+            <button class="btn btn-primary" onclick="submitCattle()">Save Cattle</button>
+            <button class="btn btn-secondary" onclick="toggleCattleForm()">Cancel</button>
+        </div>
+
+        <div class="list" id="cattleList">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading cattle...
+            </div>
+        </div>
+    </div>
+
+    <!-- FEED SECTION -->
+    <div id="feedSection" class="section">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px;">🌾 Feed Purchase</h2>
+            
+            <div class="form-group">
+                <label>Supplier Name *</label>
+                <input type="text" id="feedSupplier" placeholder="Agro Feed Store">
+            </div>
+            <div class="form-group">
+                <label>Feed Type *</label>
+                <select id="feedType">
+                    <option>Cotton Seed</option>
+                    <option>Wheat Bran</option>
+                    <option>Mustard Cake</option>
+                    <option>Maize</option>
+                    <option>Concentrate</option>
+                    <option>Green Fodder</option>
+                    <option>Dry Fodder</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantity (kg) *</label>
+                <input type="number" id="feedQty" placeholder="500">
+            </div>
+            <div class="form-group">
+                <label>Rate per kg (₹) *</label>
+                <input type="number" id="feedRate" step="0.1" placeholder="25">
+            </div>
+            
+            <button class="btn btn-primary" onclick="submitFeed()">💾 Save Purchase</button>
+            <button class="btn btn-secondary" onclick="showSection('dashboardSection')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- AGRICULTURE SECTION -->
+    <div id="agriSection" class="section">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px;">🌱 Agriculture Inputs</h2>
+            
+            <div class="form-group">
+                <label>Item Type *</label>
+                <select id="agriType">
+                    <option>Seed</option>
+                    <option>Fertilizer</option>
+                    <option>Pesticide</option>
+                    <option>Medicine</option>
+                    <option>Fuel</option>
+                    <option>Equipment</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Item Name *</label>
+                <input type="text" id="agriName" placeholder="Urea, Wheat Seed, etc.">
+            </div>
+            <div class="form-group">
+                <label>Quantity *</label>
+                <input type="text" id="agriQty" placeholder="50 bags, 25 kg, etc.">
+            </div>
+            <div class="form-group">
+                <label>Total Cost (₹) *</label>
+                <input type="number" id="agriCost" placeholder="17500">
+            </div>
+            <div class="form-group">
+                <label>Used For</label>
+                <input type="text" id="agriUsed" placeholder="Wheat crop, Cattle treatment">
+            </div>
+            
+            <button class="btn btn-primary" onclick="submitAgriInput()">💾 Save Input</button>
+            <button class="btn btn-secondary" onclick="showSection('dashboardSection')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- REPORTS SECTION -->
+    <div id="reportsSection" class="section">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px;">📊 Reports</h2>
+            
+            <div class="form-group">
+                <label>Select Month</label>
+                <input type="month" id="reportMonth">
+            </div>
+            
+            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+            <button class="btn btn-success" onclick="exportData()">📥 Backup Data</button>
+        </div>
+
+        <div id="reportResult"></div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="showSection('dashboardSection')">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('milkSection')">
+            <span class="nav-icon">🥛</span>
+            <span>Milk</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('customerSection')">
+            <span class="nav-icon">👥</span>
+            <span>Customers</span>
+        </button>
+        <button class="nav-btn" onclick="showSection('reportsSection')">
+            <span class="nav-icon">📊</span>
+            <span>Reports</span>
+        </button>
+    </div>
+
+    <!-- CONFIGURATION - UPDATE THIS ONLY -->
+    <script>
+        // ==========================================
+        // CONFIGURATION - Change this when deploying
+        // ==========================================
+        const CONFIG = {
+            // Your Google Apps Script Web App URL (from Step 2)
+            API_URL: 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE',
+            
+            // App version - increment when updating
+            VERSION: '2.0',
+            
+            // Data sheets configuration
+            SHEETS: {
+                CUSTOMERS: 'Customers',
+                MILK_SALES: 'Daily_Milk_Sales',
+                CATTLE: 'Cattle_Inventory',
+                FEED: 'Feed_Inventory',
+                CROPS: 'Agriculture_Crops',
+                INPUTS: 'Agriculture_Inputs',
+                WORKERS: 'Workers_Payroll',
+                CASHFLOW: 'Cash_Flow'
+            }
+        };
+
+        // ==========================================
+        // APP STATE
+        // ==========================================
+        let appData = {
+            customers: [],
+            cattle: [],
+            settings: {},
+            offlineQueue: []
+        };
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+            
+            document.getElementById('versionBadge').textContent = 'v' + CONFIG.VERSION;
+            document.getElementById('reportMonth').value = new Date().toISOString().slice(0, 7);
+            
+            // Check if API URL is configured
+            if (CONFIG.API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
+                showAlert('milkError', '⚠️ Please configure your API URL in the code');
+                updateStatus('offline', 'Not Configured');
+                return;
+            }
+            
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            updateStatus('online', 'Connecting...');
+            await loadDashboard();
+            await loadCustomers();
+            await loadCattle();
+            updateStatus('online', 'Live Sync');
+        }
+
+        // ==========================================
+        // API COMMUNICATION
+        // ==========================================
+        async function apiCall(action, data = {}) {
+            try {
+                const url = `${CONFIG.API_URL}?action=${action}&${new URLSearchParams(data)}`;
+                const response = await fetch(url);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                updateStatus('offline', 'Offline Mode');
+                throw error;
+            }
+        }
+
+        async function apiPost(action, data) {
+            try {
+                const response = await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({action, ...data})
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                // Queue for offline sync
+                appData.offlineQueue.push({action, data});
+                updateStatus('offline', 'Saved Offline');
+                return {success: false, offline: true};
+            }
+        }
+
+        // ==========================================
+        // DASHBOARD
+        // ==========================================
+        async function loadDashboard() {
+            try {
+                const result = await apiCall('getDashboard');
+                if (result.success) {
+                    document.getElementById('todayMilk').textContent = result.data.todayMilk + ' L';
+                    document.getElementById('todayRevenue').textContent = '₹' + result.data.todayRevenue;
+                    document.getElementById('totalCattle').textContent = result.data.totalCattle;
+                    document.getElementById('monthProfit').textContent = '₹' + result.data.profit;
+                }
+            } catch (e) {
+                console.error('Dashboard load failed:', e);
+            }
+        }
+
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const navMap = {
+                'dashboardSection': 0, 'milkSection': 1,
+                'customerSection': 2, 'reportsSection': 3
+            };
+            
+            if (navMap[sectionId] !== undefined) {
+                document.querySelectorAll('.nav-btn')[navMap[sectionId]].classList.add('active');
+            }
+            
+            // Refresh data when entering section
+            if (sectionId === 'customerSection') loadCustomers();
+            if (sectionId === 'cattleSection') loadCattle();
+            if (sectionId === 'dashboardSection') loadDashboard();
+        }
+
+        // ==========================================
+        // CUSTOMERS
+        // ==========================================
+        async function loadCustomers() {
+            try {
+                const result = await apiCall('getAll', {sheet: CONFIG.SHEETS.CUSTOMERS});
+                if (result.success) {
+                    appData.customers = result.data.filter(c => c.Status === 'Active');
+                    renderCustomerList();
+                    populateCustomerSelect();
+                }
+            } catch (e) {
+                console.error('Failed to load customers:', e);
+            }
+        }
+
+        function renderCustomerList() {
+            const list = document.getElementById('customerList');
+            if (appData.customers.length === 0) {
+                list.innerHTML = '<div class="list-item"><div class="list-item-title">No customers found</div></div>';
+                return;
+            }
+            
+            list.innerHTML = appData.customers.map(c => `
+                <div class="list-item">
+                    <div>
+                        <div class="list-item-title">${c.Name}</div>
+                        <div class="list-item-subtitle">${c.Phone} • ${c.Notes}</div>
+                    </div>
+                    <div class="list-item-amount">₹${c.Rate_Per_Liter}/L</div>
+                </div>
+            `).join('');
+        }
+
+        function populateCustomerSelect() {
+            const select = document.getElementById('milkCustomer');
+            select.innerHTML = appData.customers.map(c => 
+                `<option value="${c.CustomerID}">${c.Name} (₹${c.Rate_Per_Liter}/L)</option>`
+            ).join('');
+        }
+
+        function toggleCustomerForm() {
+            const form = document.getElementById('addCustomerForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function submitCustomer() {
+            const data = {
+                CustomerID: 'C' + Date.now(),
+                Name: document.getElementById('custName').value,
+                Phone: document.getElementById('custPhone').value,
+                Address: document.getElementById('custAddress').value,
+                Rate_Per_Liter: document.getElementById('custRate').value,
+                Effective_Date: new Date().toISOString().split('T')[0],
+                Status: 'Active',
+                Notes: document.getElementById('custNotes').value
+            };
+            
+            if (!data.Name || !data.Rate_Per_Liter) {
+                alert('Please fill required fields');
+                return;
+            }
+            
+            const result = await apiPost('save', {
+                sheet: CONFIG.SHEETS.CUSTOMERS,
+                record: data
+            });
+            
+            if (result.success || result.offline) {
+                alert('Customer saved successfully!');
+                toggleCustomerForm();
+                loadCustomers();
+                // Clear form
+                document.getElementById('custName').value = '';
+                document.getElementById('custRate').value = '';
+            }
+        }
+
+        // ==========================================
+        // MILK SALES
+        // ==========================================
+        async function submitMilkSale() {
+            const customerId = document.getElementById('milkCustomer').value;
+            const morningQty = parseFloat(document.getElementById('morningQty').value) || 0;
+            const eveningQty = parseFloat(document.getElementById('eveningQty').value) || 0;
+            
+            if (morningQty === 0 && eveningQty === 0) {
+                showAlert('milkError', 'Please enter at least one quantity');
+                return;
+            }
+            
+            // Get customer rate
+            const customer = appData.customers.find(c => c.CustomerID === customerId);
+            const rate = customer ? parseFloat(customer.Rate_Per_Liter) : 50;
+            const totalQty = morningQty + eveningQty;
+            const amount = totalQty * rate;
+            
+            const data = {
+                Date: new Date(),
+                CustomerID: customerId,
+                Morning_Qty: morningQty,
+                Evening_Qty: eveningQty,
+                Total_Qty: totalQty,
+                Amount: amount,
+                Payment_Status: document.getElementById('paymentStatus').value
+            };
+            
+            const result = await apiPost('save', {
+                sheet: CONFIG.SHEETS.MILK_SALES,
+                record: data
+            });
+            
+            if (result.success || result.offline) {
+                showAlert('milkSuccess', `✅ Saved! Amount: ₹${amount.toFixed(2)}`);
+                document.getElementById('morningQty').value = '';
+                document.getElementById('eveningQty').value = '';
+                loadDashboard();
+            } else {
+                showAlert('milkError', '❌ Failed to save');
+            }
+        }
+
+        // ==========================================
+        // CATTLE
+        // ==========================================
+        async function loadCattle() {
+            try {
+                const result = await apiCall('getAll', {sheet: CONFIG.SHEETS.CATTLE});
+                if (result.success) {
+                    appData.cattle = result.data;
+                    renderCattleList();
+                }
+            } catch (e) {
+                console.error('Failed to load cattle:', e);
+            }
+        }
+
+        function renderCattleList() {
+            const list = document.getElementById('cattleList');
+            list.innerHTML = appData.cattle.map(c => `
+                <div class="list-item">
+                    <div>
+                        <div class="list-item-title">${c.Name || c.Tag_No}</div>
+                        <div class="list-item-subtitle">${c.Breed} • ${c.Status}</div>
+                    </div>
+                    <div class="list-item-amount" style="color: ${c.Status === 'Milking' ? '#4CAF50' : '#FF9800'}">${c.Status}</div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCattleForm() {
+            const form = document.getElementById('addCattleForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function submitCattle() {
+            const data = {
+                Tag_No: document.getElementById('cattleTag').value,
+                Name: document.getElementById('cattleName').value,
+                Breed: document.getElementById('cattleBreed').value,
+                Status: document.getElementById('cattleStatus').value,
+                Purchase_Price: document.getElementById('cattlePrice').value,
+                Purchase_Date: new Date().toISOString().split('T')[0]
+            };
+            
+            if (!data.Tag_No) {
+                alert('Please enter tag number');
+                return;
+            }
+            
+            const result = await apiPost('save', {
+                sheet: CONFIG.SHEETS.CATTLE,
+                record: data
+            });
+            
+            if (result.success || result.offline) {
+                alert('Cattle saved successfully!');
+                toggleCattleForm();
+                loadCattle();
+            }
+        }
+
+        // ==========================================
+        // FEED & AGRICULTURE
+        // ==========================================
+        async function submitFeed() {
+            const data = {
+                Date: new Date(),
+                Supplier: document.getElementById('feedSupplier').value,
+                Feed_Type: document.getElementById('feedType').value,
+                Quantity_kg: document.getElementById('feedQty').value,
+                Rate_per_kg: document.getElementById('feedRate').value,
+                Total_Cost: parseFloat(document.getElementById('feedQty').value) * parseFloat(document.getElementById('feedRate').value),
+                Stock_Remaining: document.getElementById('feedQty').value
+            };
+            
+            if (!data.Supplier || !data.Quantity_kg) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            await apiPost('save', {sheet: CONFIG.SHEETS.FEED, record: data});
+            
+            // Also log to cashflow
+            await apiPost('save', {
+                sheet: CONFIG.SHEETS.CASHFLOW,
+                record: {
+                    Date: new Date(),
+                    Type: 'Expense',
+                    Category: 'Feed_Purchase',
+                    Description: `${data.Feed_Type} from ${data.Supplier}`,
+                    Amount: -data.Total_Cost
+                }
+            });
+            
+            alert('Feed purchase recorded!');
+            showSection('dashboardSection');
+        }
+
+        async function submitAgriInput() {
+            const data = {
+                Date: new Date(),
+                Item_Type: document.getElementById('agriType').value,
+                Item_Name: document.getElementById('agriName').value,
+                Quantity: document.getElementById('agriQty').value,
+                Total_Cost: document.getElementById('agriCost').value,
+                Used_For: document.getElementById('agriUsed').value
+            };
+            
+            if (!data.Item_Name || !data.Total_Cost) {
+                alert('Please fill required fields');
+                return;
+            }
+            
+            await apiPost('save', {sheet: CONFIG.SHEETS.INPUTS, record: data});
+            
+            await apiPost('save', {
+                sheet: CONFIG.SHEETS.CASHFLOW,
+                record: {
+                    Date: new Date(),
+                    Type: 'Expense',
+                    Category: data.Item_Type,
+                    Description: `${data.Item_Name} - ${data.Used_For}`,
+                    Amount: -parseFloat(data.Total_Cost)
+                }
+            });
+            
+            alert('Agriculture input recorded!');
+            showSection('dashboardSection');
+        }
+
+        // ==========================================
+        // REPORTS
+        // ==========================================
+        async function generateReport() {
+            const monthYear = document.getElementById('reportMonth').value;
+            const [year, month] = monthYear.split('-');
+            
+            // Fetch data for the month
+            const sales = await apiCall('getAll', {sheet: CONFIG.SHEETS.MILK_SALES});
+            const cashflow = await apiCall('getAll', {sheet: CONFIG.SHEETS.CASHFLOW});
+            
+            // Filter for selected month
+            const monthSales = sales.data.filter(s => {
+                const d = new Date(s.Date);
+                return d.getMonth() == (month-1) && d.getFullYear() == year;
+            });
+            
+            const totalMilk = monthSales.reduce((sum, s) => sum + parseFloat(s.Total_Qty || 0), 0);
+            const totalRevenue = monthSales.reduce((sum, s) => sum + parseFloat(s.Amount || 0), 0);
+            
+            const monthExpenses = cashflow.data.filter(c => {
+                const d = new Date(c.Date);
+                return d.getMonth() == (month-1) && d.getFullYear() == year && c.Type === 'Expense';
+            });
+            
+            const totalExpenses = monthExpenses.reduce((sum, c) => sum + Math.abs(parseFloat(c.Amount || 0)), 0);
+            const profit = totalRevenue - totalExpenses;
+            
+            document.getElementById('reportResult').innerHTML = `
+                <div class="form-container" style="margin-top: 20px;">
+                    <h3>Report: ${monthYear}</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                        <div style="text-align: center; padding: 15px; background: #E3F2FD; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #1976D2;">${totalMilk.toFixed(1)} L</div>
+                            <div style="font-size: 12px; color: #666;">Total Milk</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #E8F5E9; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #388E3C;">₹${totalRevenue.toFixed(0)}</div>
+                            <div style="font-size: 12px; color: #666;">Revenue</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #FFEBEE; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #D32F2F;">₹${totalExpenses.toFixed(0)}</div>
+                            <div style="font-size: 12px; color: #666;">Expenses</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: ${profit >= 0 ? '#E8F5E9' : '#FFEBEE'}; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${profit >= 0 ? '#388E3C' : '#D32F2F'};">₹${profit.toFixed(0)}</div>
+                            <div style="font-size: 12px; color: #666;">Net Profit</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function exportData() {
+            // Trigger download of all data as JSON
+            const exportData = {
+                exportedAt: new Date().toISOString(),
+                version: CONFIG.VERSION,
+                data: appData
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `farm-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        // ==========================================
+        // UTILITIES
+        // ==========================================
+        function showAlert(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 5000);
+        }
+
+        function updateStatus(status, text) {
+            const bar = document.getElementById('statusBar');
+            const txt = document.getElementById('statusText');
+            
+            bar.className = 'status-bar ' + status;
+            txt.textContent = status === 'online' ? '🟢 ' + text : '🔴 ' + text;
+        }
+
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(() => {
+            if (document.getElementById('dashboardSection').classList.contains('active')) {
+                loadDashboard();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
